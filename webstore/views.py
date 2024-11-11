@@ -10,12 +10,10 @@ import uuid
 
 
 def createItems():
-    # items = []
     Item.objects.create(name="Bread", price=2)
     Item.objects.create(name="Tea", price=3)
     Item.objects.create(name="Coffee", price=9)
-    # acc = Account.objects.create(user=user, balance=1000)
-    # return items
+    Item.objects.create(name="The object", price=99999)
 
 def createUser(request):
     userName = request.POST.get('username', None)
@@ -119,21 +117,14 @@ def addItemView(request):
         item_id = request.POST.get('id')
         item = Item.getItem(item_id)
         add_to_cart(request, item)
-    return render(request, 'index.html', {'items' : items})
+    return redirect('/')
 
 @login_required
 def removeItemView(request):
     if request.method == 'POST':
         item_id = request.POST.get('id')
         remove_from_cart(request, item_id)
-
-    cart_items = Cart.getCart(request.user)
-    total_price = getCartSum(request)
-    context = {
-        "cart_items": cart_items,
-        "total_price": total_price,
-    }
-    return render(request, 'cart.html', context)
+    return redirect('/cart')
 
 @login_required
 def cartView(request):
@@ -168,6 +159,13 @@ def homePageView(request):
     allItems = Item.objects.all()
     if len(allItems) == 0:
         createItems()
+        allItems = Item.objects.all()
     #accounts = Account.objects.filter(owner__username = request.user.username)
-    return render(request, 'index.html', {'items': allItems})
+    account = Account.objects.filter(user=request.user).first()
+    context = {
+        'items': allItems,
+        'username': account.user.username,
+        'balance': account.balance
+    }
+    return render(request, 'index.html', context)
 
