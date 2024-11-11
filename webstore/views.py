@@ -9,6 +9,14 @@ import json
 import uuid
 
 
+def createItems():
+    # items = []
+    Item.objects.create(name="Bread", price=2)
+    Item.objects.create(name="Tea", price=3)
+    Item.objects.create(name="Coffee", price=9)
+    # acc = Account.objects.create(user=user, balance=1000)
+    # return items
+
 def createUser(request):
     userName = request.POST.get('username', None)
     userPass = request.POST.get('password', None)
@@ -99,11 +107,12 @@ def buyCart(request):
 
 @login_required
 def addItemView(request):
-    items = request.session.get('items', [])
+    items = Item.objects.all()
+ # request.session.get('items', [])
 
     if request.method == 'POST':
-        #item = request.POST.get('content', '').strip()
-        #add_to_cart(request, item)
+        # item = request.POST.get('content', '').strip()
+        # add_to_cart(request, item)
         pass
     return render(request, 'index.html', {'items' : items})
 
@@ -136,6 +145,8 @@ def homePageView(request):
         return redirect('login/')
 
     allItems = Item.objects.all()
+    if len(allItems) == 0:
+        createItems()
     #accounts = Account.objects.filter(owner__username = request.user.username)
     return render(request, 'index.html', {'items': allItems})
 

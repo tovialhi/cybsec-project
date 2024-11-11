@@ -8,7 +8,42 @@
         <h2>Flawed site</h2>
 
         <h2>Add to cart</h2>
-        <form action="/add" method="POST">
+
+    {% if items %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.price }}</td>
+                            <td>
+                                <form action="/add/" method="POST">
+                                  {% csrf_token %}
+                                    <input type="submit" value="Add to cart"/>
+                                </form>
+                            </td>
+                            <!-- <td><a href="">Add</a></td> -->
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                    </tr>
+                </tfoot>
+            </table>
+
+        {% else %}
+            <p>No items</p>
+        {% endif %}
+
+        <form action="/add/" method="POST">
           {% csrf_token %}
             <input type="submit"/>
         </form>

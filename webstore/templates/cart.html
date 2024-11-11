@@ -5,10 +5,13 @@
         <meta charset="UTF-8" />
         <title>Tasks</title>
     </head>
+
+{% load filters %}
+
     <body>
         <form action="/" method="GET">
           {% csrf_token %}
-            <input type="submit"/>
+            <input type="submit" value="Back"/>
         </form>
 
         <h2>Cart</h2>
@@ -30,7 +33,7 @@
                         <td>{{ cartItem.item.name }}</td>
                         <td>{{ cartItem.quantity }}</td>
                         <td>{{ cartItem.item.price }}</td>
-                        <td>{{ cartItem.quantity * cartItem.item.price }}</td>
+                        <td>{{ cartItem.quantity|multiply:cartItem.item.price }}</td>
                         <td><a href="">Remove</a></td>
                     </tr>
                 {% endfor %}
