@@ -15,19 +15,20 @@ def createItems():
     Item.objects.create(name="Coffee", price=9)
     Item.objects.create(name="The object", price=99999)
 
+
 def createUser(request):
     userName = request.POST.get('username', None)
     userPass = request.POST.get('password', None)
     userMail = request.POST.get('email', None)
 
     if userName and userPass and userMail:
-        #user = User.objects.get_or_create(userName, userMail)
+        # user = User.objects.get_or_create(userName, userMail)
         user = User.objects.filter(username=userName, email=userMail)
         if not user:
             user = User.objects.create_user(username=userName,
-                                     email=userMail,
-                                     password=userPass)
-            #user.set_password(userPass)
+                                            email=userMail,
+                                            password=userPass)
+            # user.set_password(userPass)
             acc = Account.objects.create(user=user, balance=1000)
             return acc
         else:
@@ -36,12 +37,13 @@ def createUser(request):
 
     return None
 
+
 def signupView(request):
     if request.method == 'POST':
         acc = createUser(request)
         if acc:
             return redirect('/login')
-            #return render(request,'login.html', {'account': acc})
+            # return render(request,'login.html', {'account': acc})
     return render(request, 'signup.html')
 
 
@@ -57,6 +59,7 @@ def add_to_cart(request, item_id):
         Cart.objects.create(user=request.user, item=item_id)
         messages.success(request, "Item added to your cart.")
 
+
 @login_required
 def remove_from_cart(request, item_id):
     itemCart = Cart.objects.filter(user=request.user, item=item_id).first()
@@ -69,15 +72,19 @@ def remove_from_cart(request, item_id):
             itemCart.delete()
             messages.success(request, "Item removed from your cart.")
 
+
 @login_required
 def getCartSum(request):
     cart_items = Cart.getCart(request.user)
     return sum(cartItem.quantity * cartItem.item.price for cartItem in cart_items)
 
+
 @login_required
 def emptyCart(request):
     cart_items = Cart.objects.filter(user=request.user)
-    for item in cart_items: item.delete()
+    for item in cart_items:
+        item.delete()
+
 
 @login_required
 def makeOrder(request):
@@ -85,10 +92,12 @@ def makeOrder(request):
     if cart_items:
         orderId = uuid.uuid4()
         for cartItem in cart_items:
-            Order.objects.create(user=request.user, item=cartItem.item, order_id=orderId, quantity=cartItem.quantity)
+            Order.objects.create(user=request.user, item=cartItem.item,
+                                 order_id=orderId, quantity=cartItem.quantity)
         emptyCart(request)
         return orderId
     return None
+
 
 @login_required
 def buyCart(request):
@@ -109,6 +118,7 @@ def buyCart(request):
             return render(request, "ordersuccess.html", context)
     return render(request, "orderfailed.html", {"balance": account.balance})
 
+
 @login_required
 def addItemView(request):
     items = Item.objects.all()
@@ -119,12 +129,14 @@ def addItemView(request):
         add_to_cart(request, item)
     return redirect('/')
 
+
 @login_required
 def removeItemView(request):
     if request.method == 'POST':
         item_id = request.POST.get('id')
         remove_from_cart(request, item_id)
     return redirect('/cart')
+
 
 @login_required
 def cartView(request):
@@ -138,6 +150,7 @@ def cartView(request):
 
     return render(request, "cart.html", context)
 
+
 @login_required
 def checkoutView(request):
     cart_items = Cart.getCart(request.user)
@@ -150,6 +163,7 @@ def checkoutView(request):
 
     return buyCart(request)
 
+
 @login_required
 def ordersView(request):
     orders = Order.getAllOrdersGrouped(request.user)
@@ -157,27 +171,36 @@ def ordersView(request):
     account = Account.objects.filter(user=request.user).first()
     context = {
         'orders': orders,
-        'username': account.user.username,
-        'balance': account.balance
+        'account': {
+            'username': account.user.username,
+            'email': account.user.email,
+            'balance': account.balance
+        }
     }
     return render(request, 'orders.html', context)
 
 
-@login_required # May be the fix idk, we'll see later
+@login_required
 def homePageView(request):
     if not request.user.is_authenticated:
+        return redirect('login/')
+
+    # accounts = Account.objects.filter(owner__username = request.user.username)
+    account = Account.objects.filter(user=request.user).first()
+
+    if not account:
         return redirect('login/')
 
     allItems = Item.objects.all()
     if len(allItems) == 0:
         createItems()
         allItems = Item.objects.all()
-    #accounts = Account.objects.filter(owner__username = request.user.username)
-    account = Account.objects.filter(user=request.user).first()
     context = {
         'items': allItems,
-        'username': account.user.username,
-        'balance': account.balance
+        'account': {
+            'username': account.user.username,
+            'email': account.user.email,
+            'balance': account.balance
+        }
     }
     return render(request, 'index.html', context)
-

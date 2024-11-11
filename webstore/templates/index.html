@@ -1,70 +1,72 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
-    <head lang="en">
-        <meta charset="UTF-8" />
-        <title>Home</title>
-    </head>
-    <body>
-        <h2>Flawed site</h2>
 
-        <h2>Account</h2>
-        <p>Username: {{username}}</p>
-        <p>Balance: {{balance}}</p>
+<head lang="en">
+    <meta charset="UTF-8" />
+    <title>Home</title>
+</head>
 
-        <form action='/orders' method="GET">
-			{% csrf_token %}
-            <input type="submit" value="All orders"/>
-        </form>
+<body>
+    <h2>Flawed site</h2>
 
-        <h2>Items</h2>
+    <h2>Account</h2>
+    <p>Username: {{account.username}}</p>
+    <p>Email: {{account.email}}</p>
+    <p>Balance: {{account.balance}}</p>
+
+    <form action='/orders' method="GET">
+        {% csrf_token %}
+        <input type="submit" value="All orders" />
+    </form>
+
+    <h2>Items</h2>
 
     {% if items %}
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Price</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in items %}
-                        <tr>
-                            <td>{{ item.name }}</td>
-                            <td>{{ item.price }}</td>
-                            <td>
-                                <form action="/add/" method="POST">
-                                      {% csrf_token %}
-                                    <button name="add">Add to cart</button>
-                                    <input type="hidden" name="name" value="{{item.name}}"></input>
-                                    <input type="hidden" name="price" value="{{item.price}}"></input>
-                                    <input type="hidden" name="id" value="{{item.id}}"></input>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr>
-                    </tr>
-                </tfoot>
-            </table>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.price }}</td>
+                <td>
+                    <form action="/add/" method="POST">
+                        {% csrf_token %}
+                        <button name="add">Add to cart</button>
+                        <input type="hidden" name="name" value="{{item.name}}"></input>
+                        <input type="hidden" name="price" value="{{item.price}}"></input>
+                        <input type="hidden" name="id" value="{{item.id}}"></input>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+            </tr>
+        </tfoot>
+    </table>
 
-        {% else %}
-            <p>No items</p>
-        {% endif %}
+    {% else %}
+    <p>No items</p>
+    {% endif %}
 
-        <form action='/cart' method="GET">
-			{% csrf_token %}
-            <input type="submit" value="To cart"/>
-        </form>
+    <form action='/cart' method="GET">
+        {% csrf_token %}
+        <input type="submit" value="To cart" />
+    </form>
 
-        <form action='logout/' method="POST">
-			{% csrf_token %}
-            <input type="submit" value="Logout"/>
-        </form>
+    <form action='logout/' method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Logout" />
+    </form>
 
-    </body>
+</body>
+
 </html>
-
-

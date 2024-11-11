@@ -30,5 +30,3 @@ urlpatterns = [
     path('checkout/', checkoutView, name='checkout'),
     path('orders/', ordersView, name='checkout'),
 ]
-
-
