@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head lang="en">
+        <meta charset="UTF-8" />
+        <title>Home</title>
+    </head>
+    <body>
+        <h2>Flawed site</h2>
+
+        <h2>Add to cart</h2>
+        <form action="/add" method="POST">
+          {% csrf_token %}
+            <input type="submit"/>
+        </form>
+
+        <form action='/cart' method="GET">
+			{% csrf_token %}
+            <input type="submit" value="To cart"/>
+        </form>
+
+        <form action='logout/' method="POST">
+			{% csrf_token %}
+            <input type="submit" value="Logout"/>
+        </form>
+
+    </body>
+</html>
+
+

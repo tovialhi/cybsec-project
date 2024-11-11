@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head lang="en">
+        <meta charset="UTF-8" />
+        <title>Tasks</title>
+    </head>
+    <body>
+        <form action="/" method="GET">
+          {% csrf_token %}
+            <input type="submit"/>
+        </form>
+
+        <h2>Cart</h2>
+
+{% if cart_items %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total Price</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cartItem in cart_items %}
+                    <tr>
+                        <td>{{ cartItem.item.name }}</td>
+                        <td>{{ cartItem.quantity }}</td>
+                        <td>{{ cartItem.item.price }}</td>
+                        <td>{{ cartItem.quantity * cartItem.item.price }}</td>
+                        <td><a href="">Remove</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"></td>
+                    <td>Total:</td>
+                    <td>{{ total_price }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <a href="" class="btn btn-primary">Checkout</a>
+    {% else %}
+        <p>Cart is empty</p>
+    {% endif %}
+
+    </body>
+</html>
+
+
+

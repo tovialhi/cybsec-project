@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head lang="en">
+        <meta charset="UTF-8" />
+        <title>Create account</title>
+    </head>
+    <body>
+      <h2>Create account</h2>
+
+        <form method="POST">
+          {% csrf_token %}
+            <span>Email:</span><br/>
+            <input type="text" name="email"/><br/>
+            <span>Username:</span><br/>
+            <input type="text" name="username"/><br/>
+            <span>Password:</span><br/>
+            <input type="text" name="password"/><br/>
+            <input type="submit"/>
+        </form>
+
+    </body>
+</html>
