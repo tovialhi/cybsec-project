@@ -8,8 +8,13 @@ class Account(models.Model):
 	balance = models.IntegerField()
 
 class Item(models.Model):
+    item_id = models.UUIDField(default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=60) 
     price = models.IntegerField(default=0) 
+
+    @staticmethod
+    def getItem(item_id): 
+        return Item.objects.filter(id=item_id).first()
 
 class Order(models.Model):
 #account = models.ForeignKey(account, on_delete=models.CASCADE) 

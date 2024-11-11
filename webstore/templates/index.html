@@ -25,11 +25,13 @@
                             <td>{{ item.price }}</td>
                             <td>
                                 <form action="/add/" method="POST">
-                                  {% csrf_token %}
-                                    <input type="submit" value="Add to cart"/>
+                                      {% csrf_token %}
+                                    <button name="add">Add to cart</button>
+                                    <input type="hidden" name="name" value="{{item.name}}"></input>
+                                    <input type="hidden" name="price" value="{{item.price}}"></input>
+                                    <input type="hidden" name="id" value="{{item.id}}"></input>
                                 </form>
                             </td>
-                            <!-- <td><a href="">Add</a></td> -->
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -43,10 +45,10 @@
             <p>No items</p>
         {% endif %}
 
-        <form action="/add/" method="POST">
-          {% csrf_token %}
-            <input type="submit"/>
-        </form>
+        <!-- <form action="/add/" method="POST"> -->
+        <!--   {% csrf_token %} -->
+        <!--     <input type="submit"/> -->
+        <!-- </form> -->
 
         <form action='/cart' method="GET">
 			{% csrf_token %}

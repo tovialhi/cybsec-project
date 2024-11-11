@@ -108,17 +108,16 @@ def buyCart(request):
 @login_required
 def addItemView(request):
     items = Item.objects.all()
- # request.session.get('items', [])
 
     if request.method == 'POST':
-        # item = request.POST.get('content', '').strip()
-        # add_to_cart(request, item)
-        pass
+        item_id = request.POST.get('id')
+        item = Item.getItem(item_id)
+        add_to_cart(request, item)
     return render(request, 'index.html', {'items' : items})
 
 @login_required
 def removeItemView(request):
-    items = request.session.get('items', [])
+    items = Item.objects.all()
 
     if request.method == 'POST':
         #item = request.POST.get('content', '').strip()
