@@ -73,41 +73,41 @@ def remove_from_cart(request, item_id):
 
 @login_required
 def getCartSum(request):
-    # cart_items = Cart.objects.filter(user=request.user)
     cart_items = Cart.getCart(request.user)
     return sum(cartItem.quantity * cartItem.item.price for cartItem in cart_items)
 
 @login_required
-def emptyCart(user):
-    cart_items = Cart.objects.filter(user=user)
+def emptyCart(request):
+    cart_items = Cart.objects.filter(user=request.user)
     for item in cart_items: item.delete()
 
 @login_required
-def makeOrder(user):
-    cart_items = Cart.objects.filter(user=user)
+def makeOrder(request):
+    cart_items = Cart.getCart(request.user)
+    print(cart_items)
     if cart_items:
         orderId = uuid.uuid4()
         for cartItem in cart_items:
             Order.objects.create(user=request.user, item=cartItem.item, order_id=orderId, quantity=cartItem.quantity)
-        emptyCart(request.user)
+        emptyCart(request)
         return orderId
-    return -1
+    return None
 
 @login_required
 def buyCart(request):
-    account = Account.objects.filter(user=request.user)
-    total_price = getCartSum(request.user)
+    account = Account.objects.filter(user=request.user).first()
+    total_price = getCartSum(request)
 
     if total_price > 0 and account.balance >= total_price:
         account.balance -= total_price
-        orderId = makeOrder(request.user)
-        account.save()
-        context = {
-            "items": Order.getOrder(request.user. orderId),
-            "total_price": total_price,
-        }
-        return render(request, "ordersuccess.html", context)
-
+        orderId = makeOrder(request)
+        if orderId != None:
+            account.save()
+            context = {
+                "items": Order.getOrder(request.user, orderId),
+                "total_price": total_price,
+            }
+            return render(request, "ordersuccess.html", context)
     return render(request, "orderfailed.html", {"balance": account.balance})
 
 @login_required
@@ -145,6 +145,18 @@ def cartView(request):
     }
 
     return render(request, "cart.html", context)
+
+@login_required
+def checkoutView(request):
+    cart_items = Cart.getCart(request.user)
+    total_price = getCartSum(request)
+
+    context = {
+        "cart_items": cart_items,
+        "total_price": total_price,
+    }
+
+    return buyCart(request)
 
 
 @login_required # May be the fix idk, we'll see later
