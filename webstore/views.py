@@ -60,16 +60,21 @@ def add_to_cart(request, item_id):
         messages.success(request, "Item added to your cart.")
 
 @login_required
-def remove_from_cart(request, cart_item_id):
-    itemCart = get_object_or_404(Cart, id=cart_item_id)
+def remove_from_cart(request, item_id):
+    itemCart = Cart.objects.filter(user=request.user, item=item_id).first()
 
-    if itemCart.user == request.user:
-        itemCart.delete()
-        messages.success(request, "Item removed from your cart.")
+    if itemCart and itemCart.user == request.user:
+        if itemCart.quantity > 1:
+            itemCart.quantity -= 1
+            itemCart.save()
+        else:
+            itemCart.delete()
+            messages.success(request, "Item removed from your cart.")
 
 @login_required
 def getCartSum(request):
-    cart_items = Cart.objects.filter(user=request.user)
+    # cart_items = Cart.objects.filter(user=request.user)
+    cart_items = Cart.getCart(request.user)
     return sum(cartItem.quantity * cartItem.item.price for cartItem in cart_items)
 
 @login_required
@@ -117,17 +122,21 @@ def addItemView(request):
 
 @login_required
 def removeItemView(request):
-    items = Item.objects.all()
-
     if request.method == 'POST':
-        #item = request.POST.get('content', '').strip()
-        #remove_from_cart(request, item)
-        pass
-    return render(request, 'index.html', {'items' : items})
+        item_id = request.POST.get('id')
+        remove_from_cart(request, item_id)
+
+    cart_items = Cart.getCart(request.user)
+    total_price = getCartSum(request)
+    context = {
+        "cart_items": cart_items,
+        "total_price": total_price,
+    }
+    return render(request, 'cart.html', context)
 
 @login_required
 def cartView(request):
-    cart_items = Cart.objects.filter(user=request.user)
+    cart_items = Cart.getCart(request.user)
     total_price = getCartSum(request)
 
     context = {

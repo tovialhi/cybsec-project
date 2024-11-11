@@ -44,4 +44,8 @@ class Cart(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE) 
     quantity = models.IntegerField(default=1)
 
+    @staticmethod
+    def getCart(user_id):
+        return Cart.objects.filter(user=user_id)
+
 

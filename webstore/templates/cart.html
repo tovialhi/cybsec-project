@@ -34,7 +34,13 @@
                         <td>{{ cartItem.quantity }}</td>
                         <td>{{ cartItem.item.price }}</td>
                         <td>{{ cartItem.quantity|multiply:cartItem.item.price }}</td>
-                        <td><a href="">Remove</a></td>
+                        <td>
+                            <form action="/remove/" method="POST">
+                                  {% csrf_token %}
+                                <button name="remove">Remove</button>
+                                <input type="hidden" name="id" value="{{cartItem.item.id}}"></input>
+                            </form>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
