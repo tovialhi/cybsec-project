@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head lang="en">
+        <meta charset="UTF-8" />
+        <title>Tasks</title>
+    </head>
+
+{% load filters %}
+
+    <body>
+        <form action="/" method="GET">
+          {% csrf_token %}
+            <input type="submit" value="Back"/>
+        </form>
+
+        <h2>Order {{order_id}}</h2>
+
+{% if order_items %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total Price</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order_item in order_items %}
+                    <tr>
+                        <td>{{ order_item.item.name }}</td>
+                        <td>{{ order_item.quantity }}</td>
+                        <td>{{ order_item.item.price }}</td>
+                        <td>{{ order_item.quantity|multiply:order_item.item.price }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"></td>
+                    <td>Order total:</td>
+                    <td>{{ total_price }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+    {% else %}
+        <p>Order is empty</p>
+    {% endif %}
+
+    </body>
+</html>
+

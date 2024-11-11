@@ -13,24 +13,24 @@ class Item(models.Model):
     price = models.IntegerField(default=0) 
 
     @staticmethod
-    def getItem(item_id): 
+    def getItem(item_id):
         return Item.objects.filter(id=item_id).first()
 
 class Order(models.Model):
-#account = models.ForeignKey(account, on_delete=models.CASCADE) 
+#account = models.ForeignKey(account, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     order_id = models.UUIDField(default=uuid.uuid4, editable=False)
-    quantity = models.IntegerField(default=1) 
+    quantity = models.IntegerField(default=1)
     date = models.DateField(default=datetime.datetime.today)
 
     @staticmethod
-    def getAllOrders(user_id): 
+    def getAllOrders(user_id):
         return Order.objects.filter(user=user_id).order_by('-date')
 
     @staticmethod
-    def getOrder(user_id, order_id): 
-        return Order.objects.filter(user=user_id, id=order_id).order_by('-date')
+    def getOrder(user_id, order_id):
+        return Order.objects.filter(user=user_id, order_id=order_id)
 
     @staticmethod
     def getOrderTotal(user_id, order_id): 

@@ -84,7 +84,6 @@ def emptyCart(request):
 @login_required
 def makeOrder(request):
     cart_items = Cart.getCart(request.user)
-    print(cart_items)
     if cart_items:
         orderId = uuid.uuid4()
         for cartItem in cart_items:
@@ -99,12 +98,14 @@ def buyCart(request):
     total_price = getCartSum(request)
 
     if total_price > 0 and account.balance >= total_price:
-        account.balance -= total_price
         orderId = makeOrder(request)
         if orderId != None:
+            account.balance -= total_price
             account.save()
+            order_items = Order.getOrder(request.user, orderId)
             context = {
-                "items": Order.getOrder(request.user, orderId),
+                "order_id": orderId,
+                "order_items": order_items,
                 "total_price": total_price,
             }
             return render(request, "ordersuccess.html", context)
