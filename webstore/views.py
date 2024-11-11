@@ -150,6 +150,18 @@ def checkoutView(request):
 
     return buyCart(request)
 
+@login_required
+def ordersView(request):
+    orders = Order.getAllOrdersGrouped(request.user)
+
+    account = Account.objects.filter(user=request.user).first()
+    context = {
+        'orders': orders,
+        'username': account.user.username,
+        'balance': account.balance
+    }
+    return render(request, 'orders.html', context)
+
 
 @login_required # May be the fix idk, we'll see later
 def homePageView(request):

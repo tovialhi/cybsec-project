@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head lang="en">
         <meta charset="UTF-8" />
-        <title>Tasks</title>
+        <title>Home</title>
     </head>
 
 {% load filters %}
@@ -13,9 +13,18 @@
             <input type="submit" value="Back"/>
         </form>
 
-        <h2>Order {{order_id}}</h2>
+        <h2>Account</h2>
+        <p>Username: {{username}}</p>
+        <p>Balance: {{balance}}</p>
 
-{% if order_items %}
+        <h2>Orders</h2>
+
+    {% if orders %}
+        {% for order_items in orders %}
+
+    {% if order_items %}
+        <h3>Order {{order_items.order_id}}</h3>
+        <p>Date: {{order_items.date}}</p>
         <table class="table">
             <thead>
                 <tr>
@@ -27,7 +36,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for order_item in order_items %}
+                {% for order_item in order_items.order_list %}
                     <tr>
                         <td>{{ order_item.item.name }}</td>
                         <td>{{ order_item.quantity }}</td>
@@ -40,7 +49,7 @@
                 <tr>
                     <td colspan="3"></td>
                     <td>Order total:</td>
-                    <td>{{ total_price }}</td>
+                    <td>{{ order_items.total }}</td>
                 </tr>
             </tfoot>
         </table>
@@ -49,10 +58,12 @@
         <p>Order is empty</p>
     {% endif %}
 
-        <form action='/orders' method="GET">
-                        {% csrf_token %}
-            <input type="submit" value="All orders"/>
-        </form>
+
+        {% endfor %}
+
+    {% else %}
+        <p>No orders</p>
+    {% endif %}
 
     </body>
 </html>

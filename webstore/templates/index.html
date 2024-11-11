@@ -11,6 +11,11 @@
         <p>Username: {{username}}</p>
         <p>Balance: {{balance}}</p>
 
+        <form action='/orders' method="GET">
+			{% csrf_token %}
+            <input type="submit" value="All orders"/>
+        </form>
+
         <h2>Items</h2>
 
     {% if items %}
@@ -48,11 +53,6 @@
         {% else %}
             <p>No items</p>
         {% endif %}
-
-        <!-- <form action="/add/" method="POST"> -->
-        <!--   {% csrf_token %} -->
-        <!--     <input type="submit"/> -->
-        <!-- </form> -->
 
         <form action='/cart' method="GET">
 			{% csrf_token %}

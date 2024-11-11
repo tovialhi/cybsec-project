@@ -26,7 +26,22 @@ class Order(models.Model):
 
     @staticmethod
     def getAllOrders(user_id):
-        return Order.objects.filter(user=user_id).order_by('-date')
+        return Order.objects.filter(user=user_id).order_by('order_id', '-date')
+
+    @staticmethod
+    def getAllOrdersGrouped(user_id):
+        orders = Order.getAllOrders(user_id)
+        grouped_orders = {}
+        for order in orders:
+            if order.order_id not in grouped_orders:
+                grouped_orders[order.order_id] = {
+                    'order_id': order.order_id,
+                    'date': order.date,
+                    'total': Order.getOrderTotal(user_id, order.order_id),
+                    'order_list': []
+                }
+            grouped_orders[order.order_id]['order_list'].append(order)
+        return list(grouped_orders.values())
 
     @staticmethod
     def getOrder(user_id, order_id):
@@ -34,8 +49,8 @@ class Order(models.Model):
 
     @staticmethod
     def getOrderTotal(user_id, order_id): 
-        orders = Order.objects.filter(user=user_id, id=order_id).order_by('-date')
-        total = sum(order.item.price for order in orders)
+        orders = Order.objects.filter(user=user_id, order_id=order_id).order_by('-date')
+        total = sum(order.item.price * order.quantity for order in orders)
         return total
 
 class Cart(models.Model):
