@@ -38,6 +38,21 @@ def createUser(request):
     return None
 
 
+@login_required
+def newitemView(request):
+    # Fix for Broken Access Control
+    # if not request.user.is_superuser:
+    #     return redirect('/')
+
+    if request.method == 'POST':
+        name = request.POST.get('name', None)
+        price = request.POST.get('price', None)
+        if name and price:
+            Item.objects.create(name=name, price=price)
+
+    return render(request, 'newitem.html')
+
+
 def signupView(request):
     if request.method == 'POST':
         acc = createUser(request)

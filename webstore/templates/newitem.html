@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head lang="en">
+    <meta charset="UTF-8" />
+    <title>Create item</title>
+</head>
+
+<body>
+    <form action="/" method="GET">
+        {% csrf_token %}
+        <input type="submit" value="Back" />
+    </form>
+
+    <h2>Create item</h2>
+
+    <form action="/newitem/" method="POST">
+        {% csrf_token %}
+        <span>Name:</span><br />
+        <input type="text" name="name" /><br />
+        <span>Price:</span><br />
+        <input type="number" name="price" /><br />
+        <input type="submit" />
+    </form>
+
+</body>
+
+</html>
