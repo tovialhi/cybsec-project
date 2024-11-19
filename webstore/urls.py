@@ -22,7 +22,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 urlpatterns = [
     path('', homePageView, name='home'),
     path('signup/', signupView, name='signup'),
-    path('login/', LoginView.as_view(template_name='login.html')),
+    path('login/', loginView, name='login'),
     path('logout/', LogoutView.as_view(next_page='/')),
     path('cart/', cartView, name='cart'),
     path('add/', addItemView, name='addItem'),

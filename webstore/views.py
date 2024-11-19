@@ -54,6 +54,18 @@ def newitemView(request):
     return render(request, 'newitem.html')
 
 
+def loginView(request):
+    if request.method == 'POST':
+        userName = request.POST.get('username', None)
+        userPass = request.POST.get('password', None)
+        auth_user = authenticate(
+            username=userName, password=userPass)
+        if auth_user:
+            login(request, auth_user)
+            return redirect('/')
+    return render(request, 'login.html')
+
+
 def signupView(request):
     if request.method == 'POST':
         acc = createUser(request)

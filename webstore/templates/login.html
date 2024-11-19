@@ -1,8 +1,25 @@
-<h2>Login</h2>
-<form method="POST">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Login</button>
+<!-- <h2>Login</h2> -->
+<!-- <form method="POST"> -->
+<!--   {% csrf_token %} -->
+<!--   {{ form.as_p }} -->
+<!--   <button type="submit">Login</button> -->
+<!---->
+<!--   <button onclick="location.href = '/signup'">Create account</button> -->
+<!-- </form> -->
 
-  <button onclick="location.href = '/signup'">Create account</button>
+
+<h2>Login</h2>
+<form action="/login/" method="POST">
+  {% csrf_token %}
+  <span>Username:</span><br />
+  <input type="text" name="username" /><br />
+  <span>Password:</span><br />
+  <input type="text" name="password" /><br />
+  <button type="submit">Login</button>
+  <!-- <button onclick="location.href = '/signup'">Create account</button> -->
+</form>
+<form action="/signup/" method="POST">
+  {% csrf_token %}
+  <button type="submit">Create account</button>
+  <!-- <button action="/signup" method="GET">Create account</button> -->
 </form>
