@@ -1,12 +1,15 @@
+from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Account, Item, Cart, Order
 from django.db.models import Q
+from django.db import connection
 from django.contrib import messages
 import json
 import uuid
+import sqlite3
 
 
 def createItems():
@@ -22,13 +25,11 @@ def createUser(request):
     userMail = request.POST.get('email', None)
 
     if userName and userPass and userMail:
-        # user = User.objects.get_or_create(userName, userMail)
         user = User.objects.filter(username=userName, email=userMail)
         if not user:
             user = User.objects.create_user(username=userName,
                                             email=userMail,
                                             password=userPass)
-            # user.set_password(userPass)
             acc = Account.objects.create(user=user, balance=1000)
             return acc
         else:
@@ -58,7 +59,6 @@ def signupView(request):
         acc = createUser(request)
         if acc:
             return redirect('/login')
-            # return render(request,'login.html', {'account': acc})
     return render(request, 'signup.html')
 
 
@@ -193,6 +193,30 @@ def ordersView(request):
         }
     }
     return render(request, 'orders.html', context)
+
+
+@login_required
+def filterView(request):
+    account = Account.objects.filter(user=request.user).first()
+    itemFilter = request.POST.get('filter')
+
+    # Flaw: SQL injection
+    query = "SELECT * FROM webstore_item WHERE name LIKE '%" + itemFilter + "%'"
+    items = Item.objects.raw(query)
+
+    # Fix
+    # items = Item.objects.filter(
+    #     name=itemFilter) if itemFilter else Item.objects.all()
+
+    context = {
+        'items': items,
+        'account': {
+            'username': account.user.username,
+            'email': account.user.email,
+            'balance': account.balance
+        }
+    }
+    return render(request, 'index.html', context)
 
 
 @login_required

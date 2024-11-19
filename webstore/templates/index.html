@@ -19,6 +19,13 @@
 
     <h2>Items</h2>
 
+    <form action="/filter/" method="POST">
+        {% csrf_token %}
+        <span>Search items:</span>
+        <input type="text" name="filter" /><br />
+        <input type="submit" />
+    </form>
+
     {% if items %}
     <table class="table">
         <thead>
