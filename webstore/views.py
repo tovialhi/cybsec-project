@@ -19,13 +19,43 @@ def createItems():
     Item.objects.create(name="The object", price=99999)
 
 
+def validatePassword(password):
+    if not password or len(password) < 8 or len(password) > 16:
+        return False
+
+    digit_found = False
+    special_char_found = False
+    uppercase_found = False
+    lowercase_found = False
+    password_special_characters = set("!@#$^&*()_+[]{}|;:,.<>?/")
+
+    for char in password:
+        if char.isdigit():
+            digit_found = True
+        elif char in password_special_characters:
+            special_char_found = True
+        elif char.isupper():
+            uppercase_found = True
+        elif char.islower():
+            lowercase_found = True
+
+    return digit_found and special_char_found and uppercase_found and lowercase_found
+
+
 def createUser(request):
     userName = request.POST.get('username', None)
     userPass = request.POST.get('password', None)
     userMail = request.POST.get('email', None)
 
+    # Flaw: Identification and Authentication Failures
+    # Permits default, weak, or well-known passwords
+
+    # Fix: Identification and Authentication Failures (weak password)
+    if not validatePassword(userPass):
+        return None
+
     if userName and userPass and userMail:
-        user = User.objects.filter(username=userName, email=userMail)
+        user = User.objects.filter(username=userName, email=userMail).first()
         if not user:
             user = User.objects.create_user(username=userName,
                                             email=userMail,
@@ -41,7 +71,9 @@ def createUser(request):
 
 @login_required
 def newitemView(request):
-    # Fix for Broken Access Control
+    # Flaw: Broken Access Control
+
+    # Fix: Broken Access Control
     # if not request.user.is_superuser:
     #     return redirect('/')
 
@@ -216,7 +248,7 @@ def filterView(request):
     query = "SELECT * FROM webstore_item WHERE name LIKE '%" + itemFilter + "%'"
     items = Item.objects.raw(query)
 
-    # Fix
+    # Fix : SQL injection
     # items = Item.objects.filter(
     #     name=itemFilter) if itemFilter else Item.objects.all()
 
