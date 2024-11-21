@@ -4,6 +4,22 @@ import datetime
 import uuid
 
 
+class LoginAttempt(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField(default=datetime.datetime.today)
+
+    @staticmethod
+    def getLoginAttempts(user_id, minutes):
+        current_time = datetime.datetime.today()
+        time_threshold = current_time - datetime.timedelta(minutes=minutes)
+        # attempts = LoginAttempt.objects.filter(
+        #     user=user_id, date__gt=time_threshold)
+
+        attempts = LoginAttempt.objects.filter(
+            user=user_id, date__range=[time_threshold, current_time])
+        return len(attempts)
+
+
 class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     balance = models.IntegerField()

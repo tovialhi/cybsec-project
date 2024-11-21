@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .models import Account, Item, Cart, Order
+from .models import Account, Item, Cart, Order, LoginAttempt
 from django.db.models import Q
 from django.db import connection
 from django.contrib import messages
@@ -90,12 +90,23 @@ def loginView(request):
     if request.method == 'POST':
         userName = request.POST.get('username', None)
         userPass = request.POST.get('password', None)
+        user = User.objects.filter(username=userName).first()
         auth_user = authenticate(
             username=userName, password=userPass)
+
+        # Flaw: Identification and Authentication Failures (brute force attacks)
+        # Fix: Brute force login
+        # attempts = LoginAttempt.getLoginAttempts(user, 1)
+        # if attempts > 5:
+        #     return render(request, 'login.html', {"message": "Too many failed login attempts"})
+
         if auth_user:
             login(request, auth_user)
             return redirect('/')
-    return render(request, 'login.html')
+        if user:
+            LoginAttempt.objects.create(user=user)
+            return render(request, 'login.html', {"message": "Wrong password"})
+    return render(request, 'login.html', {"message": ""})
 
 
 def signupView(request):
