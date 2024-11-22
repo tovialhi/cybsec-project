@@ -12,9 +12,6 @@ class LoginAttempt(models.Model):
     def getLoginAttempts(user_id, minutes):
         current_time = datetime.datetime.today()
         time_threshold = current_time - datetime.timedelta(minutes=minutes)
-        # attempts = LoginAttempt.objects.filter(
-        #     user=user_id, date__gt=time_threshold)
-
         attempts = LoginAttempt.objects.filter(
             user=user_id, date__range=[time_threshold, current_time])
         return len(attempts)
@@ -23,6 +20,7 @@ class LoginAttempt(models.Model):
 class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     balance = models.IntegerField()
+    picture = models.CharField(max_length=60, default="")
 
 
 class Item(models.Model):
@@ -36,7 +34,6 @@ class Item(models.Model):
 
 
 class Order(models.Model):
-    # account = models.ForeignKey(account, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     order_id = models.UUIDField(default=uuid.uuid4, editable=False)
@@ -75,7 +72,6 @@ class Order(models.Model):
 
 
 class Cart(models.Model):
-    # account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)

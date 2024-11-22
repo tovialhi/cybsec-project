@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from .views import addItemView, checkoutView, filterView, homePageView, cartView, ordersView, removeItemView, signupView, newitemView, loginView
+from .views import addItemView, checkoutView, filterView, homePageView, cartView, ordersView, profilepicView, removeItemView, signupView, newitemView, loginView
 from django.contrib.auth.views import LoginView, LogoutView
 
 urlpatterns = [
@@ -31,4 +31,5 @@ urlpatterns = [
     path('orders/', ordersView, name='checkout'),
     path('newitem/', newitemView, name='newitem'),
     path('filter/', filterView, name='filter'),
+    path('profilepic/', profilepicView, name='picture'),
 ]

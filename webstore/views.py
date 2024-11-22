@@ -1,3 +1,6 @@
+import ipaddress
+import socket
+from urllib.parse import urlparse
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -5,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Account, Item, Cart, Order, LoginAttempt
 from django.db.models import Q
-from django.db import connection
+from django.db import connection, transaction
 from django.contrib import messages
 import json
 import uuid
@@ -51,8 +54,8 @@ def createUser(request):
     # Permits default, weak, or well-known passwords
 
     # Fix: Identification and Authentication Failures (weak password)
-    if not validatePassword(userPass):
-        return None
+    # if not validatePassword(userPass):
+    #     return None
 
     if userName and userPass and userMail:
         user = User.objects.filter(username=userName, email=userMail).first()
@@ -157,6 +160,7 @@ def emptyCart(request):
 
 
 @login_required
+@transaction.atomic
 def makeOrder(request):
     cart_items = Cart.getCart(request.user)
     if cart_items:
@@ -170,6 +174,7 @@ def makeOrder(request):
 
 
 @login_required
+@transaction.atomic
 def buyCart(request):
     account = Account.objects.filter(user=request.user).first()
     total_price = getCartSum(request)
@@ -191,8 +196,6 @@ def buyCart(request):
 
 @login_required
 def addItemView(request):
-    items = Item.objects.all()
-
     if request.method == 'POST':
         item_id = request.POST.get('id')
         item = Item.getItem(item_id)
@@ -223,14 +226,6 @@ def cartView(request):
 
 @login_required
 def checkoutView(request):
-    cart_items = Cart.getCart(request.user)
-    total_price = getCartSum(request)
-
-    context = {
-        "cart_items": cart_items,
-        "total_price": total_price,
-    }
-
     return buyCart(request)
 
 
@@ -248,6 +243,58 @@ def ordersView(request):
         }
     }
     return render(request, 'orders.html', context)
+
+
+def validate_image_url(url):
+    parsed_url = urlparse(url)
+    if not url or parsed_url.scheme not in ('http', 'https'):
+        return False
+    try:
+        parsed_url = urlparse(url)
+        ip = socket.gethostbyname(parsed_url.hostname)
+        if ipaddress.ip_address(ip).is_private:
+            return False
+        allowed_domains = ["i.imgur.com", "flickr.com"]
+        if parsed_url.hostname not in allowed_domains:
+            return False
+    except Exception:
+        return False
+    return True
+
+
+@login_required
+def profilepicView(request):
+    account = Account.objects.filter(user=request.user).first()
+    if request.method == 'POST':
+        picUrl = request.POST.get('url')
+        message = ""
+
+        # Flaw: SSRF
+        # Fix: SSRF
+        # Url validation
+        # if validate_image_url(picUrl):
+        #     account.picture = picUrl
+        #     account.save()
+        #     message = "Profile picture set"
+        # else:
+        #     message = "Not a valid url"
+
+        account.picture = picUrl
+        account.save()
+        message = "Profile picture set"
+
+        context = {
+            'items': Item.objects.all(),
+            'account': {
+                'username': account.user.username,
+                'email': account.user.email,
+                'balance': account.balance,
+                'picture': account.picture
+            },
+            'message': message
+        }
+        return render(request, 'index.html', context)
+    return redirect("/")
 
 
 @login_required
@@ -279,7 +326,6 @@ def homePageView(request):
     if not request.user.is_authenticated:
         return redirect('login/')
 
-    # accounts = Account.objects.filter(owner__username = request.user.username)
     account = Account.objects.filter(user=request.user).first()
 
     if not account:
@@ -294,7 +340,8 @@ def homePageView(request):
         'account': {
             'username': account.user.username,
             'email': account.user.email,
-            'balance': account.balance
+            'balance': account.balance,
+            'picture': account.picture
         }
     }
     return render(request, 'index.html', context)
