@@ -1,7 +1,13 @@
+import requests
+from django.http import JsonResponse
+from django.core.files.base import ContentFile
+from PIL import Image
+from io import BytesIO
 import ipaddress
 import socket
 from urllib.parse import urlparse
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.views import csrf_protect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
@@ -31,7 +37,6 @@ def validatePassword(password):
     uppercase_found = False
     lowercase_found = False
     password_special_characters = set("!@#$^&*()_+[]{}|;:,.<>?/")
-
     for char in password:
         if char.isdigit():
             digit_found = True
@@ -41,7 +46,6 @@ def validatePassword(password):
             uppercase_found = True
         elif char.islower():
             lowercase_found = True
-
     return digit_found and special_char_found and uppercase_found and lowercase_found
 
 
@@ -50,10 +54,8 @@ def createUser(request):
     userPass = request.POST.get('password', None)
     userMail = request.POST.get('email', None)
 
-    # Flaw: Identification and Authentication Failures
-    # Permits default, weak, or well-known passwords
-
-    # Fix: Identification and Authentication Failures (weak password)
+    # FLAW: Identification and Authentication Failures
+    # FIX: Identification and Authentication Failures (weak password)
     # if not validatePassword(userPass):
     #     return None
 
@@ -68,15 +70,14 @@ def createUser(request):
         else:
             acc = Account.objects.filter(user=user).first()
             return acc
-
     return None
 
 
 @login_required
+# @csrf_protect
 def newitemView(request):
-    # Flaw: Broken Access Control
-
-    # Fix: Broken Access Control
+    # FLAW: Broken Access Control
+    # FIX: Broken Access Control
     # if not request.user.is_superuser:
     #     return redirect('/')
 
@@ -97,8 +98,8 @@ def loginView(request):
         auth_user = authenticate(
             username=userName, password=userPass)
 
-        # Flaw: Identification and Authentication Failures (brute force attacks)
-        # Fix: Brute force login
+        # FLAW: Identification and Authentication Failures
+        # FIX: Brute force login
         # attempts = LoginAttempt.getLoginAttempts(user, 1)
         # if attempts > 5:
         #     return render(request, 'login.html', {"message": "Too many failed login attempts"})
@@ -195,6 +196,7 @@ def buyCart(request):
 
 
 @login_required
+# @csrf_protect
 def addItemView(request):
     if request.method == 'POST':
         item_id = request.POST.get('id')
@@ -204,6 +206,7 @@ def addItemView(request):
 
 
 @login_required
+# @csrf_protect
 def removeItemView(request):
     if request.method == 'POST':
         item_id = request.POST.get('id')
@@ -225,6 +228,7 @@ def cartView(request):
 
 
 @login_required
+# @csrf_protect
 def checkoutView(request):
     return buyCart(request)
 
@@ -254,7 +258,8 @@ def validate_image_url(url):
         ip = socket.gethostbyname(parsed_url.hostname)
         if ipaddress.ip_address(ip).is_private:
             return False
-        allowed_domains = ["i.imgur.com", "flickr.com"]
+        allowed_domains = ["i.imgur.com", "flickr.com", 'images.unsplash.com',
+                           'cdn.pixabay.com',]
         if parsed_url.hostname not in allowed_domains:
             return False
     except Exception:
@@ -262,26 +267,50 @@ def validate_image_url(url):
     return True
 
 
+def validate_image_get(image_url):
+    valid = validate_image_url(image_url)
+    if not valid:
+        return None, {'message': 'Not a valid image url'}
+    response = requests.get(image_url, timeout=5)
+    try:
+        image = Image.open(BytesIO(response.content))
+        if image.format not in ['JPEG', 'PNG', 'GIF']:
+            return None, {'message': 'Not a valid image format'}
+        image.load()
+        image.verify()
+    except Exception:
+        return None, {'message': 'Invalid image'}
+    return response, None
+
+
 @login_required
+def upload_profile_picture(request, image_url):
+    message = {'message': 'Not a valid profile picture'}
+
+    # FLAW: SSRF
+    response = requests.get(image_url)
+
+    # FIX: SSRF
+    # response, message = validate_image_get(image_url)
+    # if response and response.status_code == 200:
+
+    if response.status_code == 200:
+        account = Account.objects.filter(user=request.user).first()
+        account.picture.save(
+            f'profile_pic_{request.user.username}.jpg', ContentFile(response.content))
+        return True, {'message': 'Profile picture updated successfully'}
+    return False, message
+
+
+@login_required
+# @csrf_protect
 def profilepicView(request):
     account = Account.objects.filter(user=request.user).first()
     if request.method == 'POST':
         picUrl = request.POST.get('url')
-        message = ""
+        message = {}
 
-        # Flaw: SSRF
-        # Fix: SSRF
-        # Url validation
-        # if validate_image_url(picUrl):
-        #     account.picture = picUrl
-        #     account.save()
-        #     message = "Profile picture set"
-        # else:
-        #     message = "Not a valid url"
-
-        account.picture = picUrl
-        account.save()
-        message = "Profile picture set"
+        success, message = upload_profile_picture(request, picUrl)
 
         context = {
             'items': Item.objects.all(),
@@ -291,22 +320,23 @@ def profilepicView(request):
                 'balance': account.balance,
                 'picture': account.picture
             },
-            'message': message
+            'message': message['message']
         }
         return render(request, 'index.html', context)
     return redirect("/")
 
 
 @login_required
+# @csrf_protect
 def filterView(request):
     account = Account.objects.filter(user=request.user).first()
     itemFilter = request.POST.get('filter')
 
-    # Flaw: SQL injection
+    # FLAW: SQL injection
     query = "SELECT * FROM webstore_item WHERE name LIKE '%" + itemFilter + "%'"
     items = Item.objects.raw(query)
 
-    # Fix : SQL injection
+    # FIX : SQL injection
     # items = Item.objects.filter(
     #     name=itemFilter) if itemFilter else Item.objects.all()
 
@@ -315,7 +345,8 @@ def filterView(request):
         'account': {
             'username': account.user.username,
             'email': account.user.email,
-            'balance': account.balance
+            'balance': account.balance,
+            'picture': account.picture
         }
     }
     return render(request, 'index.html', context)

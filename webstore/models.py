@@ -20,7 +20,8 @@ class LoginAttempt(models.Model):
 class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     balance = models.IntegerField()
-    picture = models.CharField(max_length=60, default="")
+    picture = models.ImageField(
+        upload_to='profile_pictures/', null=True, blank=True)
 
 
 class Item(models.Model):

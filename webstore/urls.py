@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from .views import addItemView, checkoutView, filterView, homePageView, cartView, ordersView, profilepicView, removeItemView, signupView, newitemView, loginView
 from django.contrib.auth.views import LoginView, LogoutView
+
 
 urlpatterns = [
     path('', homePageView, name='home'),
@@ -32,4 +35,4 @@ urlpatterns = [
     path('newitem/', newitemView, name='newitem'),
     path('filter/', filterView, name='filter'),
     path('profilepic/', profilepicView, name='picture'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
