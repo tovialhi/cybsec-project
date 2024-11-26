@@ -1,27 +1,22 @@
 import requests
-from django.http import JsonResponse
 from django.core.files.base import ContentFile
 from PIL import Image
 from io import BytesIO
 import ipaddress
 import socket
 from urllib.parse import urlparse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.views import csrf_protect
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Account, Item, Cart, Order, LoginAttempt
-from django.db.models import Q
-from django.db import connection, transaction
+from django.db import transaction
 from django.contrib import messages
-import json
 import uuid
-import sqlite3
 
 
-def createItems():
+def createTestItems():
     Item.objects.create(name="Bread", price=2)
     Item.objects.create(name="Tea", price=3)
     Item.objects.create(name="Coffee", price=9)
@@ -31,7 +26,6 @@ def createItems():
 def validatePassword(password):
     if not password or len(password) < 8 or len(password) > 16:
         return False
-
     digit_found = False
     special_char_found = False
     uppercase_found = False
@@ -54,8 +48,8 @@ def createUser(request):
     userPass = request.POST.get('password', None)
     userMail = request.POST.get('email', None)
 
-    # FLAW: Identification and Authentication Failures
-    # FIX: Identification and Authentication Failures (weak password)
+    # FLAW: Identification and Authentication Failures (Weak password)
+    # FIX: Weak password
     # if not validatePassword(userPass):
     #     return None
 
@@ -90,6 +84,14 @@ def newitemView(request):
     return render(request, 'newitem.html')
 
 
+@login_required
+# @csrf_protect
+def logoutView(request):
+    logout(request)
+    return redirect("/")
+
+
+# @csrf_protect
 def loginView(request):
     if request.method == 'POST':
         userName = request.POST.get('username', None)
@@ -98,7 +100,7 @@ def loginView(request):
         auth_user = authenticate(
             username=userName, password=userPass)
 
-        # FLAW: Identification and Authentication Failures
+        # FLAW: Identification and Authentication Failures (Brute force login)
         # FIX: Brute force login
         # attempts = LoginAttempt.getLoginAttempts(user, 1)
         # if attempts > 5:
@@ -124,7 +126,6 @@ def signupView(request):
 @login_required
 def add_to_cart(request, item_id):
     itemCart = Cart.objects.filter(user=request.user, item=item_id).first()
-
     if itemCart:
         itemCart.quantity += 1
         itemCart.save()
@@ -137,7 +138,6 @@ def add_to_cart(request, item_id):
 @login_required
 def remove_from_cart(request, item_id):
     itemCart = Cart.objects.filter(user=request.user, item=item_id).first()
-
     if itemCart and itemCart.user == request.user:
         if itemCart.quantity > 1:
             itemCart.quantity -= 1
@@ -179,7 +179,6 @@ def makeOrder(request):
 def buyCart(request):
     account = Account.objects.filter(user=request.user).first()
     total_price = getCartSum(request)
-
     if total_price > 0 and account.balance >= total_price:
         orderId = makeOrder(request)
         if orderId != None:
@@ -218,12 +217,10 @@ def removeItemView(request):
 def cartView(request):
     cart_items = Cart.getCart(request.user)
     total_price = getCartSum(request)
-
     context = {
         "cart_items": cart_items,
         "total_price": total_price,
     }
-
     return render(request, "cart.html", context)
 
 
@@ -236,7 +233,6 @@ def checkoutView(request):
 @login_required
 def ordersView(request):
     orders = Order.getAllOrdersGrouped(request.user)
-
     account = Account.objects.filter(user=request.user).first()
     context = {
         'orders': orders,
@@ -274,7 +270,7 @@ def validate_image_get(image_url):
     response = requests.get(image_url, timeout=5)
     try:
         image = Image.open(BytesIO(response.content))
-        if image.format not in ['JPEG', 'PNG', 'GIF']:
+        if image.format not in ['JPEG', 'PNG']:
             return None, {'message': 'Not a valid image format'}
         image.load()
         image.verify()
@@ -358,13 +354,12 @@ def homePageView(request):
         return redirect('login/')
 
     account = Account.objects.filter(user=request.user).first()
-
     if not account:
         return redirect('login/')
 
     allItems = Item.objects.all()
     if len(allItems) == 0:
-        createItems()
+        createTestItems()
         allItems = Item.objects.all()
     context = {
         'items': allItems,

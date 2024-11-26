@@ -5,16 +5,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
-# SECURITY WARNING: keep the secret key used in production secret!
+
 SECRET_KEY = 'django-insecure-&m**&z#ps(g@cl2%8renn3^!f01f_f2iyocj0i9t3p5^o4v040'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -30,12 +29,12 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # FLAW: CSRF
-    # FIX:
-    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # FLAW: CSRF
+    # FIX: CSRF
+    # 'django.middleware.csrf.CsrfViewMiddleware'
 ]
 
 ROOT_URLCONF = 'project.urls'
